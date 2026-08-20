@@ -44,16 +44,28 @@ with `git stash apply <sha>` rather than `pop`.
 
 ## 4. Cut the branch from the integration branch
 
+First work out the remote. **Do not assume it is called `origin`** — plenty of
+repositories have a differently-named remote, or two of them:
+
+1. `remote` in `.gitflow.toml`, if set
+2. the current branch's upstream (`git rev-parse --abbrev-ref @{u}`)
+3. `origin`, if it exists
+4. the only remote, if there is exactly one
+
+If none of those resolve — two remotes and no upstream, say — **ask which one**,
+and offer to record the answer as `remote` in `.gitflow.toml` so nobody has to
+answer twice.
+
 ```bash
-git fetch origin <dev>
-git checkout -b <feature_prefix><slug> origin/<dev>
+git fetch <remote> <dev>
+git checkout -b <feature_prefix><slug> <remote>/<dev>
 ```
 
-Branch from `origin/<dev>` **explicitly**. This is the point of the skill:
+Branch from `<remote>/<dev>` **explicitly**. This is the point of the skill:
 ancestry is correct by construction, so it never has to be detected and
 corrected later. Do not branch from whatever happens to be checked out.
 
-If `origin/<dev>` does not exist, say so and ask whether to branch from the
+If `<remote>/<dev>` does not exist, say so and ask whether to branch from the
 local `<dev>` instead — do not silently fall back.
 
 ## 5. Record and report

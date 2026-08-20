@@ -108,7 +108,8 @@ def read_config(root: str) -> dict[str, str]:
     ever holds `key = "value"` lines, which keeps it readable by the POSIX sh
     git hooks as well as from here.
     """
-    cfg = {"main": "main", "dev": "dev", "feature_prefix": "feature/", "protected": "main dev"}
+    cfg = {"main": "main", "dev": "dev", "feature_prefix": "feature/",
+           "protected": "main dev", "remote": ""}
     path = os.path.join(root, ".gitflow.toml")
     try:
         with open(path, encoding="utf-8") as fh:
@@ -125,6 +126,27 @@ def read_config(root: str) -> dict[str, str]:
     except OSError:
         pass
     return cfg
+
+
+def remote_name(cwd: str, cfg: dict[str, str]) -> str | None:
+    """Which remote to compare against.
+
+    Not every repository calls it `origin` — assuming so meant the ancestry
+    check silently skipped, which is the worst outcome for a check: it looked
+    like it ran and it had not. Order: the config, then the branch's upstream,
+    then `origin`, then the only remote if there is exactly one.
+    """
+    if cfg.get("remote"):
+        return cfg["remote"]
+
+    upstream = git(cwd, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}")
+    if upstream and "/" in upstream:
+        return upstream.split("/", 1)[0]
+
+    remotes = (git(cwd, "remote") or "").split()
+    if "origin" in remotes:
+        return "origin"
+    return remotes[0] if len(remotes) == 1 else None
 
 
 def protected_branches(cfg: dict[str, str]) -> list[str]:
@@ -338,8 +360,15 @@ def mode_session_start(payload: dict) -> None:
         )
     else:
         lines.append(f"On '{branch}'.")
-        base = f"origin/{dev}"
-        if git(cwd, "rev-parse", "--quiet", "--verify", base) is not None:
+        rem = remote_name(cwd, cfg)
+        base = f"{rem}/{dev}" if rem else None
+        if base is None:
+            lines.append(
+                "No remote to compare against, so the ancestry of this branch was not "
+                "checked. Set `remote` in .gitflow.toml if this repository's remote is "
+                "not called origin."
+            )
+        elif git(cwd, "rev-parse", "--quiet", "--verify", base) is not None:
             merged = subprocess.run(
                 ["git", "merge-base", "--is-ancestor", base, "HEAD"],
                 cwd=cwd,
