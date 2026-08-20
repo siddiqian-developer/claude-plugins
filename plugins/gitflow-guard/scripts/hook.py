@@ -139,15 +139,27 @@ def remote_name(cwd: str, cfg: dict[str, str]) -> str | None:
     Order: the `remote` config key, the branch's upstream, `origin`, then the
     only remote if there is exactly one. None of it costs anything in the normal
     case.
+
+    Every candidate is checked against `git remote` before it is returned. A
+    configured name is a particular hazard: `.gitflow.toml` is committed, so a
+    value that is right on the machine that wrote it is wrong on every clone
+    that named its remote differently — and trusting it blindly reproduces the
+    silent skip this function exists to prevent.
     """
-    if cfg.get("remote"):
-        return cfg["remote"]
+    remotes = (git(cwd, "remote") or "").split()
+    if not remotes:
+        return None
+
+    configured = cfg.get("remote")
+    if configured and configured in remotes:
+        return configured
 
     upstream = git(cwd, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}")
     if upstream and "/" in upstream:
-        return upstream.split("/", 1)[0]
+        candidate = upstream.split("/", 1)[0]
+        if candidate in remotes:
+            return candidate
 
-    remotes = (git(cwd, "remote") or "").split()
     if "origin" in remotes:
         return "origin"
     return remotes[0] if len(remotes) == 1 else None
