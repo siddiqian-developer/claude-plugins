@@ -51,3 +51,7 @@ visible; merging anyway remains a human decision.
 
 No dependency on `gitflow-guard`. Conventional Commits and a changelog are
 useful in repositories with no branching policy at all.
+
+## Changing this plugin
+
+See [DEVELOPING.md](DEVELOPING.md) — architecture, the contracts that fail silently when broken, the cases to keep green, and how to test locally.

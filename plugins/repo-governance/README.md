@@ -60,3 +60,7 @@ forks genuinely cannot push to your branches. Everything else here is detection.
 
 `audit` reports this without softening it. If the answer is "nothing prevents a
 push to main", it says exactly that.
+
+## Changing this plugin
+
+See [DEVELOPING.md](DEVELOPING.md) — architecture, the contracts that fail silently when broken, the cases to keep green, and how to test locally.

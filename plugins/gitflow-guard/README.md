@@ -75,3 +75,7 @@ A temporary WIP commit is usually better.
   reports the real position.
 - Everything fails open. If `python3` is missing or a hook errors, the tool call
   proceeds.
+
+## Changing this plugin
+
+See [DEVELOPING.md](DEVELOPING.md) — architecture, the contracts that fail silently when broken, the cases to keep green, and how to test locally.
