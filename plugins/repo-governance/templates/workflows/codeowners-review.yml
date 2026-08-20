@@ -121,6 +121,15 @@ jobs:
                   if rx.match(f):
                       owned[f] = (owners, pat)
 
+          # A bare catch-all is a fallback, not a protection rule. Enforcing it
+          # would mean every pull request needs cross-review, and — because the
+          # catch-all almost always names one person — a pull request from that
+          # person touching only catch-all files could never be approved by
+          # anyone. Only files whose WINNING rule is a specific path count as
+          # owned.
+          CATCHALL = {"*", "/*", "**", "/**"}
+          owned = {f: v for f, v in owned.items() if v[1] not in CATCHALL}
+
           required, touched = set(), {}
           for f, (owners, pat) in owned.items():
               for o in owners:
