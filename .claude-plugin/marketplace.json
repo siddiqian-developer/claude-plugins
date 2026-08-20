@@ -26,6 +26,14 @@
       "keywords": ["github", "codeowners", "review", "governance", "audit"]
     },
     {
+      "name": "delivery-discipline",
+      "source": "./plugins/delivery-discipline",
+      "displayName": "Delivery Discipline",
+      "description": "Three habits that keep delivered work honest: end every task with manual verification steps that separate what was run from what still needs running, never write a claim that is not traceable to code, and enforce the project's vocabulary in code as well as documents.",
+      "license": "MIT",
+      "keywords": ["verification", "claims", "vocabulary", "delivery", "review"]
+    },
+    {
       "name": "changelog-keeper",
       "source": "./plugins/changelog-keeper",
       "displayName": "Changelog Keeper",

@@ -71,3 +71,17 @@ context stays clean. This is advice, not a block — if they want to continue,
 continue.
 
 Report the branch created, what it was cut from, and the task it maps to.
+
+## 6. When more than one person works the plan
+
+If the plan assigns work to more than one person, say this once when starting a
+slice — it is the difference between a clean Friday and a merge weekend:
+
+> **One slice = one branch = one merge, and merge frequently.** Do not batch
+> three slices to the end of the week; that is what turns append-only edits into
+> a conflict. Do not start the next slice until the current one is merged and
+> green — batching also makes a failing gate impossible to attribute to a
+> change.
+
+Where the plan allows it, keep each slice in its own module so the only shared
+lines touched are append-only ones.

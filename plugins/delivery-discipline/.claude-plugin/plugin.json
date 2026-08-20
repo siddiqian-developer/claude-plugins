@@ -1,0 +1,13 @@
+{
+  "name": "delivery-discipline",
+  "displayName": "Delivery Discipline",
+  "description": "Three habits that keep delivered work honest: end every task with manual verification steps, never write a claim that is not traceable to code, and enforce the project's own vocabulary in code as well as documents.",
+  "author": {
+    "name": "siddiqian-developer",
+    "url": "https://github.com/siddiqian-developer"
+  },
+  "repository": "https://github.com/siddiqian-developer/claude-plugins",
+  "license": "MIT",
+  "keywords": ["verification", "claims", "vocabulary", "delivery", "review"],
+  "skills": "./skills/"
+}
