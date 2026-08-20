@@ -1,0 +1,110 @@
+name: gitflow
+
+# gitflow-guard — the server-side half.
+#
+# On a private repository on the GitHub Free plan these checks CANNOT be marked
+# required, because branch protection and rulesets are not available on that
+# plan. They still run, and a failure is visible and red on the pull request —
+# but nothing mechanically prevents a merge. Treat this as detection, not as a
+# gate, and read the plugin's audit skill for what is actually in force.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: gitflow-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  branch-policy:
+    name: branch-policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read gitflow configuration
+        id: cfg
+        run: |
+          set -euo pipefail
+          read_key() {
+            if [ -f .gitflow.toml ]; then
+              sed -n "s/^[[:space:]]*$1[[:space:]]*=[[:space:]]*//p" .gitflow.toml \
+                | head -n1 | sed 's/[[:space:]]*#.*$//; s/[[:space:]]*$//; s/^"//; s/"$//'
+            fi
+          }
+          MAIN="$(read_key main)";    MAIN="${MAIN:-main}"
+          DEV="$(read_key dev)";      DEV="${DEV:-dev}"
+          PREFIX="$(read_key feature_prefix)"; PREFIX="${PREFIX:-feature/}"
+          {
+            echo "main=$MAIN"
+            echo "dev=$DEV"
+            echo "prefix=$PREFIX"
+          } >> "$GITHUB_OUTPUT"
+          echo "main=$MAIN dev=$DEV prefix=$PREFIX"
+
+      - name: Branch name follows the convention
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
+          MAIN: ${{ steps.cfg.outputs.main }}
+          DEV: ${{ steps.cfg.outputs.dev }}
+          PREFIX: ${{ steps.cfg.outputs.prefix }}
+        run: |
+          set -euo pipefail
+
+          # dev -> main is the release pull request; it has no feature prefix.
+          if [ "$HEAD_REF" = "$DEV" ] && [ "$BASE_REF" = "$MAIN" ]; then
+            echo "Release pull request ($DEV -> $MAIN). Naming convention does not apply."
+            exit 0
+          fi
+
+          case "$HEAD_REF" in
+            "$PREFIX"*)
+              echo "Branch '$HEAD_REF' follows the '$PREFIX' convention."
+              ;;
+            *)
+              echo "::error title=Branch name::'$HEAD_REF' does not start with '$PREFIX'."
+              echo "Rename it:  git branch -m ${PREFIX}<short-name>"
+              exit 1
+              ;;
+          esac
+
+      - name: Branch is descended from the integration branch
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          MAIN: ${{ steps.cfg.outputs.main }}
+          DEV: ${{ steps.cfg.outputs.dev }}
+        run: |
+          set -euo pipefail
+
+          # Only feature -> dev pull requests are checked. A release pull
+          # request is dev -> main by definition and needs no ancestry check.
+          if [ "$BASE_REF" = "$MAIN" ]; then
+            echo "Base is $MAIN; skipping ancestry check."
+            exit 0
+          fi
+
+          if ! git rev-parse --quiet --verify "origin/$DEV" >/dev/null; then
+            echo "::warning title=Ancestry::origin/$DEV not found; cannot check ancestry."
+            exit 0
+          fi
+
+          if git merge-base --is-ancestor "origin/$DEV" HEAD; then
+            echo "HEAD is descended from origin/$DEV."
+          else
+            echo "::error title=Ancestry::This branch is not descended from origin/$DEV."
+            echo "It was probably cut from the wrong branch, which drags unrelated"
+            echo "history into $DEV at merge time. To correct it:"
+            echo "  git rebase --onto origin/$DEV \$(git merge-base HEAD origin/$DEV)"
+            exit 1
+          fi

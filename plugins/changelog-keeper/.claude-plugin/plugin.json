@@ -1,0 +1,14 @@
+{
+  "name": "changelog-keeper",
+  "displayName": "Changelog Keeper",
+  "description": "Turns Conventional Commits into Keep a Changelog entries. Reminds rather than generates, and gates the pull request when a notable change lands with no entry.",
+  "author": {
+    "name": "siddiqian-developer",
+    "url": "https://github.com/siddiqian-developer"
+  },
+  "repository": "https://github.com/siddiqian-developer/claude-plugins",
+  "license": "MIT",
+  "keywords": ["changelog", "conventional-commits", "release", "keep-a-changelog"],
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json"
+}

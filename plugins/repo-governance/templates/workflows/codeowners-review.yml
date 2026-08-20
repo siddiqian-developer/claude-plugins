@@ -1,0 +1,179 @@
+name: codeowners-review
+
+# repo-governance — code-owner review, re-implemented.
+#
+# GitHub's own CODEOWNERS feature requires Pro, Team or Enterprise on a private
+# repository. On the Free plan the file is inert: GitHub neither requests
+# reviewers from it nor requires their approval. This workflow reads the same
+# file and does both jobs itself.
+#
+# What it CAN do: request the right reviewers, and go red until one of them
+# approves.
+# What it CANNOT do: block the merge. Required status checks are also a paid
+# feature. This makes the state unambiguous; it does not make it enforced.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  pull_request_review:
+    types: [submitted, dismissed]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: codeowners-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  owner-review:
+    name: owner-review
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Evaluate code owners
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re, subprocess, sys
+
+          repo   = os.environ["REPO"]
+          pr     = os.environ["PR"]
+          author = os.environ["AUTHOR"].lower()
+
+          def gh(*args):
+              out = subprocess.run(["gh", *args], capture_output=True, text=True)
+              if out.returncode != 0:
+                  print(f"::warning::gh {' '.join(args)} failed: {out.stderr.strip()}")
+                  return None
+              return out.stdout
+
+          # ---- locate CODEOWNERS ------------------------------------------
+          path = next(
+              (p for p in (".github/CODEOWNERS", "CODEOWNERS", "docs/CODEOWNERS")
+               if os.path.exists(p)),
+              None,
+          )
+          if not path:
+              print("No CODEOWNERS file. Nothing to enforce.")
+              sys.exit(0)
+
+          # ---- parse: (pattern, [owners]) in file order -------------------
+          rules = []
+          with open(path, encoding="utf-8") as fh:
+              for line in fh:
+                  line = line.split("#", 1)[0].strip()
+                  if not line:
+                      continue
+                  parts = line.split()
+                  if len(parts) < 2:
+                      continue
+                  rules.append((parts[0], [o.lstrip("@").lower() for o in parts[1:]]))
+
+          # ---- gitignore-style matching -----------------------------------
+          def to_regex(pat: str) -> re.Pattern:
+              anchored = pat.startswith("/")
+              p = pat.lstrip("/")
+              dir_only = p.endswith("/")
+              p = p.rstrip("/")
+              out, i = [], 0
+              while i < len(p):
+                  c = p[i]
+                  if c == "*":
+                      if p[i:i + 2] == "**":
+                          out.append(".*"); i += 2; continue
+                      out.append("[^/]*")
+                  elif c == "?":
+                      out.append("[^/]")
+                  else:
+                      out.append(re.escape(c))
+                  i += 1
+              body = "".join(out)
+              prefix = "" if anchored else "(?:.*/)?"
+              suffix = "/.*" if dir_only else "(?:/.*)?"
+              return re.compile(f"^{prefix}{body}{suffix}$")
+
+          compiled = [(to_regex(pat), owners, pat) for pat, owners in rules]
+
+          # ---- changed files ----------------------------------------------
+          raw = gh("pr", "view", pr, "--repo", repo, "--json", "files")
+          if raw is None:
+              sys.exit(0)
+          files = [f["path"] for f in json.loads(raw).get("files", [])]
+          if not files:
+              print("No changed files.")
+              sys.exit(0)
+
+          # Last matching rule wins, as GitHub does it.
+          owned = {}
+          for f in files:
+              for rx, owners, pat in compiled:
+                  if rx.match(f):
+                      owned[f] = (owners, pat)
+
+          required, touched = set(), {}
+          for f, (owners, pat) in owned.items():
+              for o in owners:
+                  required.add(o)
+                  touched.setdefault(o, set()).add(pat)
+
+          if not required:
+              print("No owned paths touched by this pull request.")
+              sys.exit(0)
+
+          print("Owned paths touched:")
+          for f, (owners, pat) in sorted(owned.items()):
+              print(f"  {f}  <- {pat}  ({', '.join('@' + o for o in owners)})")
+
+          # The author can never approve their own pull request, so an owner set
+          # that is only the author cannot be satisfied by anyone.
+          eligible = sorted(required - {author})
+          if not eligible:
+              pats = sorted({p for ps in touched.values() for p in ps})
+              print(f"::error title=Single-owner path::@{author} is the only code owner of "
+                    f"{', '.join(pats)}. Nobody else can approve this, so the review "
+                    f"requirement can never be met. Add a second owner in CODEOWNERS.")
+              sys.exit(1)
+
+          # ---- request reviews from eligible owners ------------------------
+          existing = gh("pr", "view", pr, "--repo", repo, "--json",
+                        "reviewRequests,reviews,latestReviews")
+          state = json.loads(existing) if existing else {}
+          already = {
+              (r.get("login") or "").lower()
+              for r in state.get("reviewRequests", [])
+          }
+          to_ask = [o for o in eligible if o not in already]
+          if to_ask:
+              print(f"Requesting review from: {', '.join('@' + o for o in to_ask)}")
+              gh("pr", "edit", pr, "--repo", repo, "--add-reviewer", ",".join(to_ask))
+
+          # ---- has an eligible owner approved? -----------------------------
+          approvals = {
+              (r.get("author", {}) or {}).get("login", "").lower()
+              for r in state.get("latestReviews", [])
+              if r.get("state") == "APPROVED"
+          }
+          got = sorted(approvals & set(eligible))
+
+          if got:
+              print(f"Approved by code owner(s): {', '.join('@' + g for g in got)}")
+              sys.exit(0)
+
+          print(f"::error title=Code-owner review required::This pull request touches "
+                f"owned paths and needs approval from one of "
+                f"{', '.join('@' + o for o in eligible)}. "
+                f"Note: on this plan the check cannot block the merge — it only "
+                f"reports. Merging without the approval is possible and is a choice.")
+          sys.exit(1)
+          PY

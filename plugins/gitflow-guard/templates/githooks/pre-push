@@ -1,0 +1,68 @@
+#!/bin/sh
+# gitflow-guard — push discipline and ancestry.
+#
+# Two checks, with deliberately different severities:
+#
+#   1. Pushing directly to a protected branch      -> BLOCKS
+#   2. Pushing a feature branch not descended from
+#      the integration branch                      -> WARNS
+#
+# Ancestry only warns because there are legitimate reasons to branch from
+# somewhere else — a hotfix cut from the release branch, for instance — and a
+# hook cannot tell those apart from the mistake. The mistake it is looking for
+# is branching off main by accident and then dragging unrelated history into
+# the integration branch at merge time.
+#
+# Escape hatch: git push --no-verify
+
+. "$(dirname "$0")/gitflow-lib.sh"
+
+dev=$(gf_cfg dev dev)
+remote=$1
+
+status=0
+
+# stdin: <local ref> <local sha> <remote ref> <remote sha>, one line per ref.
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ -z "$remote_ref" ] && continue
+
+  # Deleting a ref pushes the zero sha as the local sha.
+  case "$local_sha" in
+    0000000000000000000000000000000000000000)
+      target=${remote_ref#refs/heads/}
+      if gf_is_protected "$target"; then
+        gf_die "" "  Refusing to delete the protected branch ${GF_BLD}${target}${GF_OFF}." ""
+      fi
+      continue
+      ;;
+  esac
+
+  target=${remote_ref#refs/heads/}
+
+  # 1. Direct push to a protected branch.
+  if gf_is_protected "$target"; then
+    gf_die "" \
+"  You are pushing directly to ${GF_BLD}${target}${GF_OFF}, which is protected." \
+"" \
+"  Protected branches take work by pull request, so the change is reviewed" \
+"  and the checks run before it lands." \
+"" \
+"  If this really is the exception:" \
+"" \
+"      git push --no-verify" \
+""
+  fi
+
+  # 2. Ancestry: is the integration branch an ancestor of what is being pushed?
+  base="refs/remotes/${remote}/${dev}"
+  if git rev-parse --quiet --verify "$base" >/dev/null 2>&1; then
+    if ! git merge-base --is-ancestor "$base" "$local_sha" 2>/dev/null; then
+      gf_warn "${GF_BLD}${target}${GF_OFF} is not descended from ${remote}/${dev}."
+      gf_warn "It was probably cut from the wrong branch. To correct it:"
+      gf_warn "    git rebase --onto ${remote}/${dev} \$(git merge-base HEAD ${remote}/${dev})"
+      gf_warn "Pushing anyway — this is a warning, not a block."
+    fi
+  fi
+done
+
+exit $status

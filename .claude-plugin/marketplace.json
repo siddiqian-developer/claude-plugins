@@ -1,0 +1,37 @@
+{
+  "name": "siddiqian-plugins",
+  "owner": {
+    "name": "siddiqian-developer",
+    "url": "https://github.com/siddiqian-developer"
+  },
+  "description": "Git workflow discipline for teams working in Claude Code: gitflow enforcement, repository governance, and changelog upkeep.",
+  "metadata": {
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "gitflow-guard",
+      "source": "./plugins/gitflow-guard",
+      "displayName": "Gitflow Guard",
+      "description": "Enforces gitflow where the work happens. Hard-denies commits and pushes on protected branches before git runs, cuts feature branches from dev so ancestry is right by construction, and tracks the feature lifecycle against your plan.",
+      "license": "MIT",
+      "keywords": ["git", "gitflow", "branching", "workflow", "hooks"]
+    },
+    {
+      "name": "repo-governance",
+      "source": "./plugins/repo-governance",
+      "displayName": "Repo Governance",
+      "description": "Code-owner review and push detection for repositories that cannot use branch protection. Replaces the GitHub features a private repo on the Free plan does not get, and audits what is actually in force.",
+      "license": "MIT",
+      "keywords": ["github", "codeowners", "review", "governance", "audit"]
+    },
+    {
+      "name": "changelog-keeper",
+      "source": "./plugins/changelog-keeper",
+      "displayName": "Changelog Keeper",
+      "description": "Turns Conventional Commits into Keep a Changelog entries. Reminds rather than generates, because changelog entries are curated prose, and gates the pull request when a notable change lands with no entry.",
+      "license": "MIT",
+      "keywords": ["changelog", "conventional-commits", "release", "keep-a-changelog"]
+    }
+  ]
+}

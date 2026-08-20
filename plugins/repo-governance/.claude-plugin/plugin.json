@@ -1,0 +1,13 @@
+{
+  "name": "repo-governance",
+  "displayName": "Repo Governance",
+  "description": "Code-owner review and direct-push detection for repositories that cannot use branch protection, plus an audit of what is actually in force.",
+  "author": {
+    "name": "siddiqian-developer",
+    "url": "https://github.com/siddiqian-developer"
+  },
+  "repository": "https://github.com/siddiqian-developer/claude-plugins",
+  "license": "MIT",
+  "keywords": ["github", "codeowners", "review", "governance", "audit"],
+  "skills": "./skills/"
+}

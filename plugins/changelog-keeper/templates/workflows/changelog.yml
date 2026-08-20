@@ -1,0 +1,83 @@
+name: changelog
+
+# changelog-keeper — the enforcing half.
+#
+# The local post-commit hook can only print; it cannot block, and it is not
+# installed for anyone who has not run the setup. This job is the half that
+# fails, and it runs only on pull requests so it never blocks a hotfix pushed
+# straight to a branch.
+#
+# On a private repository on the GitHub Free plan this check cannot be marked
+# required, so a red result does not prevent a merge. It makes the omission
+# visible; the merge is still a human decision.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: changelog-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  entry-present:
+    name: entry-present
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: Check out with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: A notable change needs a changelog entry
+        env:
+          BASE: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+
+          git fetch --quiet origin "$BASE"
+          range="origin/$BASE...HEAD"
+
+          changelog=CHANGELOG.md
+          [ -f "$changelog" ] || changelog=docs/CHANGELOG.md
+
+          if [ ! -f "$changelog" ]; then
+            echo "::notice title=No changelog::This repository has no CHANGELOG.md; nothing to check."
+            exit 0
+          fi
+
+          # Notable commits: feat, fix, perf, refactor, revert, or anything
+          # marked breaking. Merge commits are excluded — their entries were
+          # written on the branch being merged.
+          notable=$(
+            git log --no-merges --format='%s%n%b' "$range" \
+              | grep -cE '^(feat|fix|perf|refactor|revert)(\([^)]*\))?!?:|^BREAKING CHANGE' \
+              || true
+          )
+
+          if [ "$notable" -eq 0 ]; then
+            echo "No notable commits in $range. Nothing to require."
+            exit 0
+          fi
+
+          if git diff --name-only "origin/$BASE...HEAD" | grep -qi "^\(docs/\)\?CHANGELOG\.md$"; then
+            echo "$notable notable commit(s), and $changelog was updated."
+            exit 0
+          fi
+
+          echo "::error title=Changelog entry missing::This pull request carries $notable notable commit(s) but does not touch $changelog."
+          echo ""
+          echo "Notable commits in this pull request:"
+          git log --no-merges --format='  %h %s' "$range" \
+            | grep -E '(feat|fix|perf|refactor|revert)(\([^)]*\))?!?:' || true
+          echo ""
+          echo "Add an entry under ## [Unreleased] describing what changed for someone"
+          echo "who was not here. If none of these deserve an entry, say why in the"
+          echo "pull request description."
+          exit 1

@@ -1,0 +1,14 @@
+{
+  "name": "gitflow-guard",
+  "displayName": "Gitflow Guard",
+  "description": "Enforces gitflow where the work happens: hard-denies commits and pushes on protected branches, cuts feature branches from dev, and tracks the feature lifecycle against your plan.",
+  "author": {
+    "name": "siddiqian-developer",
+    "url": "https://github.com/siddiqian-developer"
+  },
+  "repository": "https://github.com/siddiqian-developer/claude-plugins",
+  "license": "MIT",
+  "keywords": ["git", "gitflow", "branching", "workflow", "hooks"],
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json"
+}

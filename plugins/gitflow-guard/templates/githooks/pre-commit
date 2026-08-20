@@ -1,0 +1,45 @@
+#!/bin/sh
+# gitflow-guard — branch discipline.
+#
+# Refuses a commit made directly on a protected branch. Work belongs on a
+# feature branch cut from the integration branch; protected branches receive
+# work by merge, not by direct commit.
+#
+# This hook is the terminal-side layer. Inside Claude Code the PreToolUse hook
+# denies the same action earlier, before git is invoked at all.
+#
+# Escape hatch: git commit --no-verify
+# That flag is the point. It makes the exception explicit and visible in the
+# reflog rather than silent.
+
+. "$(dirname "$0")/gitflow-lib.sh"
+
+branch=$(gf_branch)
+
+# Detached HEAD: rebase, bisect, or an explicit checkout of a commit. Not a
+# branch, so branch discipline does not apply.
+[ -z "$branch" ] && exit 0
+
+# A merge in progress is exactly how work is SUPPOSED to reach these branches.
+if [ -f "$(git rev-parse --git-dir)/MERGE_HEAD" ]; then
+  exit 0
+fi
+
+gf_is_protected "$branch" || exit 0
+
+dev=$(gf_cfg dev dev)
+prefix=$(gf_cfg feature_prefix "feature/")
+
+gf_die "" \
+"  You are committing directly to ${GF_BLD}${branch}${GF_OFF}, which is protected." \
+"" \
+"  Put this work on its own branch instead:" \
+"" \
+"      git checkout -b ${prefix}<short-name> ${dev}" \
+"" \
+"  Then open a pull request into ${dev}." \
+"" \
+"  If this really is the exception, say so explicitly:" \
+"" \
+"      git commit --no-verify" \
+""

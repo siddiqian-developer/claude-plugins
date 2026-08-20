@@ -1,0 +1,88 @@
+#!/bin/sh
+# changelog-keeper — changelog reminder.
+#
+# Prints a ready-formatted entry for a notable commit. Never blocks, never
+# writes: it reminds, and a person writes the words.
+#
+# Why a reminder and not a generator: the entries in CHANGELOG.md are curated
+# prose that cite files and state honest caveats. A line derived from a commit
+# subject is not that, and a changelog full of generated lines is one nobody
+# reads.
+#
+# Pure POSIX sh — sh, sed, grep and git. Nothing else.
+
+CHANGELOG=CHANGELOG.md
+[ -f "$CHANGELOG" ] || CHANGELOG=docs/CHANGELOG.md
+
+# A merge commit has more than one parent. Merges carry entries that were
+# already written on the branch being merged.
+if git rev-parse --quiet --verify HEAD^2 >/dev/null 2>&1; then
+  exit 0
+fi
+
+subject=$(git log -1 --format=%s)
+body=$(git log -1 --format=%b)
+
+# type(scope)!: description
+type=$(printf '%s' "$subject" | sed -n 's/^\([a-z][a-z]*\)\((.*)\)\{0,1\}!\{0,1\}:.*/\1/p')
+[ -n "$type" ] || exit 0
+
+scope=$(printf '%s' "$subject" | sed -n 's/^[a-z][a-z]*(\([^)]*\))!\{0,1\}:.*/\1/p')
+desc=$(printf '%s' "$subject" | sed 's/^[a-z][a-z]*\((.*)\)\{0,1\}!\{0,1\}:[[:space:]]*//')
+
+breaking=0
+case "$subject" in *'!:'*) breaking=1 ;; esac
+printf '%s' "$body" | grep -q 'BREAKING CHANGE' && breaking=1
+
+# Quiet types earn no entry unless they break something.
+if [ "$breaking" -eq 0 ]; then
+  case "$type" in
+    docs|chore|style|ci|build|test) exit 0 ;;
+  esac
+fi
+
+# Already updated in this commit? Nothing to say.
+if git show --name-only --format= HEAD | grep -qi '^\(docs/\)\{0,1\}CHANGELOG\.md$'; then
+  exit 0
+fi
+
+if [ "$breaking" -eq 1 ]; then
+  section="Changed"
+else
+  case "$type" in
+    feat)              section="Added" ;;
+    fix)               section="Fixed" ;;
+    perf|refactor)     section="Changed" ;;
+    revert)            section="Removed" ;;
+    *)                 exit 0 ;;
+  esac
+fi
+
+if [ -n "$scope" ]; then
+  bullet="- **${scope}**: ${desc}"
+else
+  bullet="- ${desc}"
+fi
+[ "$breaking" -eq 1 ] && bullet="${bullet}  _(breaking)_"
+
+if [ -t 2 ]; then
+  ylw=$(printf '\033[33m'); bld=$(printf '\033[1m'); off=$(printf '\033[0m')
+else
+  ylw=''; bld=''; off=''
+fi
+
+{
+  echo ""
+  echo "${ylw}${bld}changelog-keeper${off}  this commit is notable and $CHANGELOG was not touched."
+  echo ""
+  echo "  Under ${bld}## [Unreleased]${off} -> ${bld}### ${section}${off}:"
+  echo ""
+  echo "      ${bullet}"
+  echo ""
+  echo "  Rewrite it before committing it. Then:"
+  echo ""
+  echo "      git add ${CHANGELOG} && git commit --amend --no-edit"
+  echo ""
+} >&2
+
+exit 0

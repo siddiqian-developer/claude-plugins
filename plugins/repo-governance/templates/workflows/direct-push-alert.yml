@@ -1,0 +1,118 @@
+name: direct-push-alert
+
+# repo-governance — direct-push detection.
+#
+# Branch protection would refuse a direct push to a protected branch. It is not
+# available on a private repository on the GitHub Free plan, so this workflow
+# notices after the fact instead and opens an issue.
+#
+# It ALERTS ONLY. It does not revert, and it does not rewrite history. An
+# automatic revert would one day undo something pushed deliberately, noisily and
+# in shared history, and the cure is worse than the disease.
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: write
+
+jobs:
+  detect:
+    name: detect
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event.created == false && github.event.deleted == false
+
+    steps:
+      - name: Was this push a pull request merge?
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.event.after }}
+          BRANCH: ${{ github.ref_name }}
+          ACTOR: ${{ github.actor }}
+          FORCED: ${{ github.event.forced }}
+          COMPARE: ${{ github.event.compare }}
+        run: |
+          python3 - <<'PY'
+          import json, os, subprocess, sys
+
+          repo   = os.environ["REPO"]
+          sha    = os.environ["SHA"]
+          branch = os.environ["BRANCH"]
+          actor  = os.environ["ACTOR"]
+          forced = os.environ.get("FORCED", "false") == "true"
+          compare = os.environ.get("COMPARE", "")
+
+          def gh_json(*args):
+              out = subprocess.run(["gh", *args], capture_output=True, text=True)
+              if out.returncode != 0:
+                  print(f"::warning::gh {' '.join(args)} failed: {out.stderr.strip()}")
+                  return None
+              try:
+                  return json.loads(out.stdout)
+              except json.JSONDecodeError:
+                  return None
+
+          pulls = gh_json("api", f"repos/{repo}/commits/{sha}/pulls",
+                          "-H", "Accept: application/vnd.github+json")
+
+          merged = [p for p in (pulls or []) if p.get("merged_at")]
+          if merged and not forced:
+              nums = ", ".join(f"#{p['number']}" for p in merged)
+              print(f"Commit {sha[:8]} arrived on {branch} via merged pull request {nums}. Fine.")
+              sys.exit(0)
+
+          # Direct push, or a force-push that rewrote the branch.
+          kind = "force-push" if forced else "direct push"
+          title = f"Unreviewed {kind} to {branch}"
+
+          # Do not pile up duplicate issues for the same branch.
+          existing = gh_json("issue", "list", "--repo", repo, "--state", "open",
+                             "--search", f'"{title}" in:title', "--json", "number,title")
+          if existing:
+              num = existing[0]["number"]
+              print(f"::warning title=Unreviewed {kind}::Already tracked in issue #{num}.")
+              body = (
+                  f"Another {kind} to `{branch}` by @{actor}.\n\n"
+                  f"- Commit: {sha}\n- Compare: {compare}\n"
+              )
+              subprocess.run(["gh", "issue", "comment", str(num), "--repo", repo,
+                              "--body", body], check=False)
+              sys.exit(0)
+
+          body = f"""\
+          A {kind} reached `{branch}` without going through a reviewed pull request.
+
+          | | |
+          |---|---|
+          | Branch | `{branch}` |
+          | Actor | @{actor} |
+          | Commit | {sha} |
+          | Compare | {compare} |
+
+          `{branch}` is meant to take work by pull request so the change is reviewed
+          and the checks run before it lands.
+
+          This repository cannot use branch protection — it is private on the GitHub
+          Free plan, where protection and rulesets are unavailable — so this was
+          detected after the fact rather than prevented. Nothing has been reverted;
+          decide what should happen to this commit.
+
+          If the push was deliberate, close this issue with a note saying why. That
+          note is the record that it was a decision rather than an accident.
+          """
+          body = "\n".join(line[10:] if line.startswith(" " * 10) else line
+                           for line in body.splitlines())
+
+          subprocess.run(["gh", "issue", "create", "--repo", repo,
+                          "--title", title, "--body", body], check=False)
+
+          print(f"::warning title=Unreviewed {kind}::{kind} to {branch} by @{actor} "
+                f"({sha[:8]}). Issue opened.")
+          PY
