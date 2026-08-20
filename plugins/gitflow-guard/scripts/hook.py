@@ -131,10 +131,14 @@ def read_config(root: str) -> dict[str, str]:
 def remote_name(cwd: str, cfg: dict[str, str]) -> str | None:
     """Which remote to compare against.
 
-    Not every repository calls it `origin` — assuming so meant the ancestry
-    check silently skipped, which is the worst outcome for a check: it looked
-    like it ran and it had not. Order: the config, then the branch's upstream,
-    then `origin`, then the only remote if there is exactly one.
+    Almost always `origin`, and the common path is one dict lookup. The fallback
+    chain exists because a repository without an `origin` used to make the
+    ancestry check compare against a ref that did not exist and skip in silence —
+    the worst way for a check to fail, since it looks like it ran.
+
+    Order: the `remote` config key, the branch's upstream, `origin`, then the
+    only remote if there is exactly one. None of it costs anything in the normal
+    case.
     """
     if cfg.get("remote"):
         return cfg["remote"]
