@@ -8,7 +8,12 @@
   },
   "repository": "https://github.com/siddiqian-developer/claude-plugins",
   "license": "MIT",
-  "keywords": ["brevity", "concise", "output", "style", "toggle"],
-  "skills": "./skills/",
-  "hooks": "./hooks/hooks.json"
+  "keywords": [
+    "brevity",
+    "concise",
+    "output",
+    "style",
+    "toggle"
+  ],
+  "skills": "./skills/"
 }
