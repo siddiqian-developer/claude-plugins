@@ -4,7 +4,7 @@
     "name": "siddiqian-developer",
     "url": "https://github.com/siddiqian-developer"
   },
-  "description": "Git workflow discipline for teams working in Claude Code: gitflow enforcement, repository governance, and changelog upkeep.",
+  "description": "Claude Code plugins: gitflow enforcement, repository governance, changelog upkeep, delivery discipline, and a global brief-mode switch.",
   "metadata": {
     "pluginRoot": "./plugins"
   },
@@ -15,7 +15,13 @@
       "displayName": "Gitflow Guard",
       "description": "Enforces gitflow where the work happens. Hard-denies commits and pushes on protected branches before git runs, cuts feature branches from dev so ancestry is right by construction, and tracks the feature lifecycle against your plan.",
       "license": "MIT",
-      "keywords": ["git", "gitflow", "branching", "workflow", "hooks"]
+      "keywords": [
+        "git",
+        "gitflow",
+        "branching",
+        "workflow",
+        "hooks"
+      ]
     },
     {
       "name": "repo-governance",
@@ -23,7 +29,13 @@
       "displayName": "Repo Governance",
       "description": "Code-owner review and push detection for repositories that cannot use branch protection. Replaces the GitHub features a private repo on the Free plan does not get, and audits what is actually in force.",
       "license": "MIT",
-      "keywords": ["github", "codeowners", "review", "governance", "audit"]
+      "keywords": [
+        "github",
+        "codeowners",
+        "review",
+        "governance",
+        "audit"
+      ]
     },
     {
       "name": "delivery-discipline",
@@ -31,7 +43,13 @@
       "displayName": "Delivery Discipline",
       "description": "Three habits that keep delivered work honest: end every task with manual verification steps that separate what was run from what still needs running, never write a claim that is not traceable to code, and enforce the project's vocabulary in code as well as documents.",
       "license": "MIT",
-      "keywords": ["verification", "claims", "vocabulary", "delivery", "review"]
+      "keywords": [
+        "verification",
+        "claims",
+        "vocabulary",
+        "delivery",
+        "review"
+      ]
     },
     {
       "name": "changelog-keeper",
@@ -39,7 +57,26 @@
       "displayName": "Changelog Keeper",
       "description": "Turns Conventional Commits into Keep a Changelog entries. Reminds rather than generates, because changelog entries are curated prose, and gates the pull request when a notable change lands with no entry.",
       "license": "MIT",
-      "keywords": ["changelog", "conventional-commits", "release", "keep-a-changelog"]
+      "keywords": [
+        "changelog",
+        "conventional-commits",
+        "release",
+        "keep-a-changelog"
+      ]
+    },
+    {
+      "name": "brief-mode",
+      "source": "./plugins/brief-mode",
+      "displayName": "Brief Mode",
+      "description": "A global switch that treats every prompt as if it began with \"be brief:\". Start a prompt with \"exp:\" for a full answer to that one message; toggle with /brief-mode:on and /brief-mode:off.",
+      "license": "MIT",
+      "keywords": [
+        "brevity",
+        "concise",
+        "output",
+        "style",
+        "toggle"
+      ]
     }
   ]
 }

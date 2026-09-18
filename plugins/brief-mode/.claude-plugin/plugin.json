@@ -1,0 +1,14 @@
+{
+  "name": "brief-mode",
+  "displayName": "Brief Mode",
+  "description": "A global switch that treats every prompt as if it began with \"be brief:\". Start a prompt with \"exp:\" for a full answer to that one message. Toggle with /brief-mode:on and /brief-mode:off.",
+  "author": {
+    "name": "siddiqian-developer",
+    "url": "https://github.com/siddiqian-developer"
+  },
+  "repository": "https://github.com/siddiqian-developer/claude-plugins",
+  "license": "MIT",
+  "keywords": ["brevity", "concise", "output", "style", "toggle"],
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json"
+}

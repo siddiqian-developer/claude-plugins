@@ -9,6 +9,7 @@ Three plugins, installable independently:
 | [`gitflow-guard`](plugins/gitflow-guard) | Enforces gitflow. Denies commits and pushes on protected branches *before git runs*, cuts feature branches from the integration branch so ancestry is right by construction, and tracks features against your plan |
 | [`repo-governance`](plugins/repo-governance) | Code-owner review and direct-push alerting for repositories that cannot use branch protection, plus an audit of what is actually in force |
 | [`changelog-keeper`](plugins/changelog-keeper) | Conventional Commits into Keep a Changelog. Reminds rather than generates, and gates the pull request when a notable change lands with no entry |
+| [`brief-mode`](plugins/brief-mode) | A global switch that answers every prompt as if it began with `be brief:`. `exp:` at the start of a prompt escapes it for that message; `/brief-mode:on` / `off` toggles it |
 
 ## Install
 
