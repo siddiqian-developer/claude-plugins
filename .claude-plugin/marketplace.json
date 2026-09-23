@@ -77,6 +77,20 @@
         "style",
         "toggle"
       ]
+    },
+    {
+      "name": "quick-hotfix",
+      "source": "./plugins/quick-hotfix",
+      "displayName": "Quick Hotfix",
+      "description": "Very quick hotfixes with minimal testing, for when you verify live in the UI. Typed before a prompt, never automatic: /quick-hotfix:run for any fix (at most 50 focused tests), /quick-hotfix:ui for a frontend-only fix that refuses anything outside the frontend.",
+      "license": "MIT",
+      "keywords": [
+        "hotfix",
+        "quick",
+        "frontend",
+        "testing",
+        "workflow"
+      ]
     }
   ]
 }

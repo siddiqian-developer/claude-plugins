@@ -10,6 +10,7 @@ Three plugins, installable independently:
 | [`repo-governance`](plugins/repo-governance) | Code-owner review and direct-push alerting for repositories that cannot use branch protection, plus an audit of what is actually in force |
 | [`changelog-keeper`](plugins/changelog-keeper) | Conventional Commits into Keep a Changelog. Reminds rather than generates, and gates the pull request when a notable change lands with no entry |
 | [`brief-mode`](plugins/brief-mode) | A global switch that answers every prompt as if it began with `be brief:`. `exp:` at the start of a prompt escapes it for that message; `/brief-mode:on` / `off` toggles it |
+| [`quick-hotfix`](plugins/quick-hotfix) | Very quick hotfixes with minimal testing, for when you verify live in the UI. `/quick-hotfix:run` for any fix (at most 50 focused tests), `/quick-hotfix:ui` for a frontend-only fix that refuses anything outside the frontend |
 
 ## Install
 
