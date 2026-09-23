@@ -1,13 +1,16 @@
 ---
 name: ui
-description: Very quick FRONTEND-ONLY hotfix with minimal testing — the user verifies live in the UI. Fails with an error, before editing anything, if the fix needs any change outside the frontend. Use only when the user types /quick-hotfix:ui before a prompt. Optional leading flag --commit (local WIP commit).
+description: Very quick FRONTEND-ONLY hotfix with minimal testing — the user verifies live in the UI. Fails with an error, before editing anything, if the fix needs any change outside the frontend. Use only when the user types /quick-hotfix:ui before a prompt. Usage /quick-hotfix:ui [test-budget] [none|touched|project] [--commit] <issue>; test-budget defaults to 50 (0 = no tests), static-check level defaults to touched.
 ---
 
 Apply ONE frontend-only quick hotfix for: $ARGUMENTS
 
+Arguments are parsed exactly as in this plugin's `run` skill (argument 1 = test budget, default 50,
+`0` = no tests; argument 2 = static-check level `none` / `touched` / `project`, default
+`touched`; `--commit` flag).
+
 Everything in this plugin's `run` skill applies (rules 1–11 and its reply shape) — read
-`../run/SKILL.md`, relative to this skill's base directory, if it is not already loaded —
-with these additions.
+`../run/SKILL.md` (relative to this skill's base directory) if it is not already loaded — with these additions.
 
 ## The frontend boundary — decided BEFORE any edit
 
@@ -30,13 +33,13 @@ with these additions.
 4. **Fixing the UI to hide a backend bug is not a UI fix.** If the real defect is server-side,
    return the ERROR above rather than papering over it in the client.
 
-## Checks (instead of rule 1–2 of quick-hotfix)
+## Checks (instead of rules 1–2 of the `run` skill)
 
 | Check | Scope |
 |---|---|
-| Typecheck | The frontend project, errors in touched files only count |
-| Lint | Touched files |
-| Tests | Frontend unit/component tests covering the touched files, **at most 50**; none if the project has none. No backend tests, no e2e. |
+| Typecheck | Per argument 2: `touched` = the frontend project, errors in touched files only count; `project` = every error reported; `none` = skipped |
+| Lint | Per argument 2: touched files, the whole frontend, or skipped |
+| Tests | Frontend unit/component tests covering the touched files, **at most the test budget** (default 50; `0` = none); none if the project has none. No backend tests, no e2e. |
 
 Follow the project's UI rules (existing primitives, design tokens, no hex colours, the house focus
 ring) — a hotfix does not get to invent a style.

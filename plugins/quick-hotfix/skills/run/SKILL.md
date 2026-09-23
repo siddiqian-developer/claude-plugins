@@ -1,6 +1,6 @@
 ---
 name: run
-description: Very quick hotfix with minimal testing — the user verifies live in the UI. Use only when the user types /quick-hotfix:run before a prompt. Optional leading flags --no-tests (typecheck/import check only) and --commit (local WIP commit after the fix).
+description: Very quick hotfix with minimal testing — the user verifies live in the UI. Use only when the user types /quick-hotfix:run before a prompt. Usage /quick-hotfix:run [test-budget] [none|touched|project] [--commit] <issue>; test-budget defaults to 50 (0 = no tests), static-check level defaults to touched.
 ---
 
 Apply ONE quick hotfix for: $ARGUMENTS
@@ -8,20 +8,27 @@ Apply ONE quick hotfix for: $ARGUMENTS
 The user is testing live in the UI and will verify the fix there. Speed matters more than
 ceremony, but the security floor below never moves.
 
-## Flags (leading words of $ARGUMENTS, then strip them)
+## Arguments (leading tokens of $ARGUMENTS, in this order; strip them, the rest is the issue)
+
+| # | Argument | Form | Default | Effect |
+|---|---|---|---|---|
+| 1 | **Test budget** | a whole number, e.g. `20` | `50` | The maximum number of tests to run for this fix. `0` = no tests. Only a leading integer counts — a number inside the issue text is not the budget. |
+| 2 | **Static-check level** | `none` · `touched` · `project` | `touched` | How much typecheck/lint/import checking to run (rule 2). `none` = no static checks at all; `touched` = only the files changed; `project` = the whole typecheck and lint of every project touched (pre-existing errors are reported, not fixed). Recognised only as one of these three exact words among the leading tokens. |
+
+Flag, anywhere among the leading tokens:
 
 | Flag | Effect |
 |---|---|
-| (none) | Default mode: focused tests, at most 50 |
-| `--no-tests` | No tests at all — static checks only (row 2 below) |
 | `--commit` | After the fix passes its checks, make a local WIP commit on the current feature branch (never push, never on a protected branch) |
+
+Examples: `/quick-hotfix:run 0 none fix the Save label` (no tests, no checks) · `/quick-hotfix:run 10 project --commit admins can remove prefills` · `/quick-hotfix:run fix the chip spacing` (50 tests, touched files).
 
 ## Rules
 
 | # | Rule |
 |---|---|
-| 1 | **Test budget.** Only the tests that cover the files you changed, **at most 50** per run (check the collected count before running; narrow with `-k` if over). `--no-tests`: none. Never the full suite. |
-| 2 | **Static checks, touched files only.** Backend: an import check of the app (`python -c "import app.main"` or the project's equivalent). Frontend: typecheck plus lint of the touched files. Pre-existing warnings are not yours to fix. |
+| 1 | **Test budget.** Only the tests that cover the files you changed, **at most the budget** (argument 1; 50 if omitted). Check the collected count before running; narrow with `-k` if over. Budget `0`: none. Never the full suite. |
+| 2 | **Static checks, at the level of argument 2** (default `touched`). Backend: an import check of the app (`python -c "import app.main"` or the project's equivalent). Frontend: typecheck plus lint — of the touched files for `touched`, of the whole project for `project`; nothing for `none`. Pre-existing warnings are not yours to fix. |
 | 3 | **Skip** the full suite, reviewer agents, seek-approval flows, plan mode and graph planning. |
 | 4 | **No questions.** Choose the obvious default and state the assumption in one line. Ask only when blocked with no reasonable guess. |
 | 5 | **Scope lock.** Change only what the fix needs: no refactors, no renames, no comment rewrites, no drive-by cleanups, no new abstractions. |

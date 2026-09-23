@@ -5,10 +5,22 @@ Nothing here is automatic: type the command in front of the prompt, every time.
 
 | Command | Does |
 |---|---|
-| `/quick-hotfix:run <issue>` | One fix. Focused tests on the changed files only (**at most 50**), an import check and a typecheck/lint of the touched files. No full suite, no reviewer, no approval flows, no questions (it states its assumption instead). Nothing is committed. |
-| `/quick-hotfix:run --no-tests <issue>` | The same, static checks only |
-| `/quick-hotfix:run --commit <issue>` | The same, then a local WIP commit on the current feature branch (never pushed, never on a protected branch) |
-| `/quick-hotfix:ui [--commit] <issue>` | **Frontend only.** Diagnoses first; if any part of the fix needs a change outside the frontend (backend, API contract, database, config, env, infrastructure) it edits nothing and returns `ERROR: not a UI-only fix` with what is needed. Frontend tests only, at most 50 |
+| `/quick-hotfix:run [budget] [level] [--commit] <issue>` | One fix. Focused tests on the changed files only, an import check and a typecheck/lint. No full suite, no reviewer, no approval flows, no questions (it states its assumption instead). Nothing is committed unless `--commit`. |
+| `/quick-hotfix:ui [budget] [level] [--commit] <issue>` | **Frontend only.** Diagnoses first; if any part of the fix needs a change outside the frontend (backend, API contract, database, config, env, infrastructure) it edits nothing and returns `ERROR: not a UI-only fix` with what is needed. Frontend tests only |
+
+## Arguments
+
+| # | Argument | Values | Default |
+|---|---|---|---|
+| 1 | Test budget: the maximum tests to run | a whole number; `0` = no tests | `50` |
+| 2 | Static-check level | `none` · `touched` (files changed) · `project` (whole typecheck and lint) | `touched` |
+| — | `--commit` | a local WIP commit on the current feature branch; never pushed, never on a protected branch | off |
+
+```
+/quick-hotfix:run 0 none fix the Save label          # no tests, no checks
+/quick-hotfix:run 10 project --commit fix the 409    # 10 tests, full checks, commit
+/quick-hotfix:ui fix the chip spacing                 # 50 tests, touched files
+```
 
 ## What it never skips
 
