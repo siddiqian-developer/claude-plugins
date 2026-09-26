@@ -77,6 +77,20 @@
         "style",
         "toggle"
       ]
+    },
+    {
+      "name": "helper-text-approval",
+      "source": "./plugins/helper-text-approval",
+      "displayName": "Helper Text Approval",
+      "description": "A global switch that makes Claude propose UI helper text as a multiple-choice question and write only the wording you approve. Toggle with /helper-text-approval:on [count] and /helper-text-approval:off.",
+      "license": "MIT",
+      "keywords": [
+        "ui",
+        "copy",
+        "helper-text",
+        "approval",
+        "toggle"
+      ]
     }
   ]
 }

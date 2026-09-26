@@ -10,6 +10,7 @@ Three plugins, installable independently:
 | [`repo-governance`](plugins/repo-governance) | Code-owner review and direct-push alerting for repositories that cannot use branch protection, plus an audit of what is actually in force |
 | [`changelog-keeper`](plugins/changelog-keeper) | Conventional Commits into Keep a Changelog. Reminds rather than generates, and gates the pull request when a notable change lands with no entry |
 | [`brief-mode`](plugins/brief-mode) | A global switch that answers every prompt as if it began with `be brief:`. `exp:` at the start of a prompt escapes it for that message; `/brief-mode:on` / `off` toggles it |
+| [`helper-text-approval`](plugins/helper-text-approval) | A switch that makes Claude propose UI helper text as a multiple-choice question and write only the wording you approve. `/helper-text-approval:on [count]` / `off` |
 
 ## Install
 

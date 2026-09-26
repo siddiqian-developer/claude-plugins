@@ -1,0 +1,19 @@
+{
+  "name": "helper-text-approval",
+  "displayName": "Helper Text Approval",
+  "description": "A global switch that makes Claude propose UI helper text as a multiple-choice question and wait for your pick before writing it. Toggle with /helper-text-approval:on [count] and /helper-text-approval:off.",
+  "author": {
+    "name": "siddiqian-developer",
+    "url": "https://github.com/siddiqian-developer"
+  },
+  "repository": "https://github.com/siddiqian-developer/claude-plugins",
+  "license": "MIT",
+  "keywords": [
+    "ui",
+    "copy",
+    "helper-text",
+    "approval",
+    "toggle"
+  ],
+  "skills": "./skills/"
+}
