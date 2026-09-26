@@ -7,6 +7,8 @@ Nothing here is automatic: type the command in front of the prompt, every time.
 |---|---|
 | `/quick-hotfix:run [budget] [level] [--commit] <issue>` | One fix. Focused tests on the changed files only, an import check and a typecheck/lint. No full suite, no reviewer, no approval flows, no questions (it states its assumption instead). Nothing is committed unless `--commit`. |
 | `/quick-hotfix:ui [budget] [level] [--commit] <issue>` | **Frontend only.** Diagnoses first; if any part of the fix needs a change outside the frontend (backend, API contract, database, config, env, infrastructure) it edits nothing and returns `ERROR: not a UI-only fix` with what is needed. Frontend tests only |
+| `/quick-hotfix:run-seek-approval [budget] [level] [--commit] <issue>` | `run`, but first runs the `seek-approval` skill on the issue and applies only the reading you approve |
+| `/quick-hotfix:ui-seek-approval [budget] [level] [--commit] <issue>` | `ui`, but first runs `seek-approval`, offering only frontend-only readings, and applies only the one you approve |
 
 ## Arguments
 
@@ -21,6 +23,9 @@ Nothing here is automatic: type the command in front of the prompt, every time.
 /quick-hotfix:run 10 project --commit fix the 409    # 10 tests, full checks, commit
 /quick-hotfix:ui fix the chip spacing                 # 50 tests, touched files
 ```
+
+The two `-seek-approval` commands need the `seek-approval` skill (with `seek-approval-understanding`
+and `seek-approval-build-decisions`) installed in `~/.claude/skills/`; this plugin does not ship it.
 
 ## What it never skips
 

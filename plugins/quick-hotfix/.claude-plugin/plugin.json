@@ -1,7 +1,7 @@
 {
   "name": "quick-hotfix",
   "displayName": "Quick Hotfix",
-  "description": "Very quick hotfixes with minimal testing, for when you verify live in the UI. Typed before a prompt, never applied automatically: /quick-hotfix:run for any fix, /quick-hotfix:ui for a frontend-only fix that refuses anything outside the frontend.",
+  "description": "Very quick hotfixes with minimal testing, for when you verify live in the UI. Typed before a prompt, never applied automatically: /quick-hotfix:run for any fix, /quick-hotfix:ui for a frontend-only fix that refuses anything outside the frontend, and a -seek-approval variant of each that gets your reading of the issue approved before editing.",
   "author": {
     "name": "siddiqian-developer",
     "url": "https://github.com/siddiqian-developer"
