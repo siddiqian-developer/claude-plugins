@@ -1,0 +1,19 @@
+{
+  "name": "seek-approval",
+  "displayName": "Seek Approval",
+  "description": "Before acting on an instruction or building anything, settle what it means and get every consequential decision approved: atomic points, exactly four real options per question, recommended first with the why, and an adversarial grill on the options and on the approved set. Includes grill-me for hard pushback on any idea.",
+  "author": {
+    "name": "siddiqian-developer",
+    "url": "https://github.com/siddiqian-developer"
+  },
+  "repository": "https://github.com/siddiqian-developer/claude-plugins",
+  "license": "MIT",
+  "keywords": [
+    "approval",
+    "clarification",
+    "decisions",
+    "requirements",
+    "review"
+  ],
+  "skills": "./skills/"
+}

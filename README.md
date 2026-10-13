@@ -2,7 +2,7 @@
 
 Git workflow discipline for teams working in Claude Code.
 
-Three plugins, installable independently:
+Plugins, installable independently:
 
 | Plugin | Does |
 |---|---|
@@ -10,6 +10,10 @@ Three plugins, installable independently:
 | [`repo-governance`](plugins/repo-governance) | Code-owner review and direct-push alerting for repositories that cannot use branch protection, plus an audit of what is actually in force |
 | [`changelog-keeper`](plugins/changelog-keeper) | Conventional Commits into Keep a Changelog. Reminds rather than generates, and gates the pull request when a notable change lands with no entry |
 | [`brief-mode`](plugins/brief-mode) | A global switch that answers every prompt as if it began with `be brief:`. `exp:` at the start of a prompt escapes it for that message; `/brief-mode:on` / `off` toggles it |
+| [`seek-approval`](plugins/seek-approval) | Settles what an instruction means and gets every consequential decision approved before anything is built: four real options per question, the recommended one first with the why. Includes `grill-me` |
+| [`quick-hotfix`](plugins/quick-hotfix) | One small fix while you test live: a test budget, a static-check level, a scope lock and a security floor that never moves; a frontend-only variant |
+| [`session-handoff`](plugins/session-handoff) | One session per feature: write what the next session needs, and consume it there |
+| [`contributor-onboarding`](plugins/contributor-onboarding) | "Onboard me": runs the project's own setup in report mode, explains the gaps, fixes what the clone can |
 
 ## Install
 

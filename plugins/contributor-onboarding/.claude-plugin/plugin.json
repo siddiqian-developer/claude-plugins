@@ -1,0 +1,19 @@
+{
+  "name": "contributor-onboarding",
+  "displayName": "Contributor Onboarding",
+  "description": "\"Onboard me\": finds the project's own setup declaration (.claude/onboarding.md, else CONTRIBUTING or a setup script), runs it in report mode, explains each gap, fixes what the clone can fix with the person's go, and separates what only another person can give, such as host access or credentials.",
+  "author": {
+    "name": "siddiqian-developer",
+    "url": "https://github.com/siddiqian-developer"
+  },
+  "repository": "https://github.com/siddiqian-developer/claude-plugins",
+  "license": "MIT",
+  "keywords": [
+    "onboarding",
+    "setup",
+    "contributors",
+    "team",
+    "workflow"
+  ],
+  "skills": "./skills/"
+}
