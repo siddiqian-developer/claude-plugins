@@ -4,7 +4,7 @@
     "name": "siddiqian-developer",
     "url": "https://github.com/siddiqian-developer"
   },
-  "description": "Claude Code plugins: gitflow enforcement, repository governance, changelog upkeep, delivery discipline, and a global brief-mode switch.",
+  "description": "Claude Code plugins: gitflow enforcement, repository governance, changelog upkeep, delivery discipline, a global brief-mode switch, approval-first working, quick hotfixes, session handoffs and contributor onboarding.",
   "metadata": {
     "pluginRoot": "./plugins"
   },
@@ -76,6 +76,54 @@
         "output",
         "style",
         "toggle"
+      ]
+    },
+    {
+      "name": "seek-approval",
+      "source": "./plugins/seek-approval",
+      "displayName": "Seek Approval",
+      "description": "Before acting on an instruction or building anything, settle what it means and get every consequential decision approved: atomic points, exactly four real options per question, recommended first with the why, and an adversarial grill on the options and on the approved set. Includes grill-me for hard pushback on any idea.",
+      "license": "MIT",
+      "keywords": [
+        "approval",
+        "decisions",
+        "review"
+      ]
+    },
+    {
+      "name": "quick-hotfix",
+      "source": "./plugins/quick-hotfix",
+      "displayName": "Quick Hotfix",
+      "description": "One small fix while you test live: a test budget, a static-check level, a scope lock and a security floor that never moves. A frontend-only variant refuses anything outside the UI, and two variants run seek-approval on the instruction first.",
+      "license": "MIT",
+      "keywords": [
+        "hotfix",
+        "frontend",
+        "testing"
+      ]
+    },
+    {
+      "name": "session-handoff",
+      "source": "./plugins/session-handoff",
+      "displayName": "Session Handoff",
+      "description": "One session per feature: end a session by writing what the next one needs that is not in the code, the git log or memory, and start the next by reading it, verifying it against the world and deleting it so it cannot go stale.",
+      "license": "MIT",
+      "keywords": [
+        "handoff",
+        "session",
+        "continuity"
+      ]
+    },
+    {
+      "name": "contributor-onboarding",
+      "source": "./plugins/contributor-onboarding",
+      "displayName": "Contributor Onboarding",
+      "description": "\"Onboard me\": finds the project's own setup declaration (.claude/onboarding.md, else CONTRIBUTING or a setup script), runs it in report mode, explains each gap, fixes what the clone can fix with the person's go, and separates what only another person can give, such as host access or credentials.",
+      "license": "MIT",
+      "keywords": [
+        "onboarding",
+        "setup",
+        "team"
       ]
     }
   ]

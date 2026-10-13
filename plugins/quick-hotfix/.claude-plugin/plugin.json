@@ -1,0 +1,19 @@
+{
+  "name": "quick-hotfix",
+  "displayName": "Quick Hotfix",
+  "description": "One small fix while you test live: a test budget, a static-check level, a scope lock and a security floor that never moves. A frontend-only variant refuses anything outside the UI, and two variants run seek-approval on the instruction first.",
+  "author": {
+    "name": "siddiqian-developer",
+    "url": "https://github.com/siddiqian-developer"
+  },
+  "repository": "https://github.com/siddiqian-developer/claude-plugins",
+  "license": "MIT",
+  "keywords": [
+    "hotfix",
+    "fix",
+    "frontend",
+    "testing",
+    "workflow"
+  ],
+  "skills": "./skills/"
+}

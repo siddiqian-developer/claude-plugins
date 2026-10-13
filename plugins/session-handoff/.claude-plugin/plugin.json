@@ -1,0 +1,19 @@
+{
+  "name": "session-handoff",
+  "displayName": "Session Handoff",
+  "description": "One session per feature: end a session by writing what the next one needs that is not in the code, the git log or memory, and start the next by reading it, verifying it against the world and deleting it so it cannot go stale.",
+  "author": {
+    "name": "siddiqian-developer",
+    "url": "https://github.com/siddiqian-developer"
+  },
+  "repository": "https://github.com/siddiqian-developer/claude-plugins",
+  "license": "MIT",
+  "keywords": [
+    "handoff",
+    "session",
+    "continuity",
+    "memory",
+    "workflow"
+  ],
+  "skills": "./skills/"
+}
